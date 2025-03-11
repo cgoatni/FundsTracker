@@ -14,5 +14,19 @@
     "express": "^4.17.1",
     "nedb": "^1.8.0",
     "date-fns": "^2.30.0"
+  },
+  "services": {
+    "type": "web",
+    "name": "funds-tracker",
+    "env": "node",
+    "plan": "free",
+    "buildCommand": "npm install",
+    "startCommand": "npm start",
+    "envVars": [
+      {
+        "key": "NODE_ENV",
+        "value": "production"
+      }
+    ]
   }
 }
