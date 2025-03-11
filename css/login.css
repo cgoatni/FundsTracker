@@ -1,0 +1,82 @@
+/* Full page light background */
+body {
+    background-color: #f0f0f0;
+    color: #333;
+    font-family: 'Poppins', sans-serif;
+    height: 100vh;
+    margin: 0;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('https://via.placeholder.com/1920x1080'); /* Replace with your image URL */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    filter: brightness(0.9); /* Slightly dimmed background */
+}
+
+.login-form {
+    background-color: rgba(255, 255, 255, 0.8); /* White background with slight transparency */
+    padding: 40px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.login-form h2 {
+    color: #333;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.form-control {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    color: #333;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.form-control:focus {
+    background-color: #fff;
+    border-color: #007bff;
+    color: #333;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    width: 100%;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.forgot-password {
+    color: #007bff;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.forgot-password:hover {
+    color: #0056b3;
+}
+
+/* Responsive for mobile */
+@media (max-width: 768px) {
+    .login-form {
+        padding: 300px;
+        max-width: 90%;
+    }
+}
