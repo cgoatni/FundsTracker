@@ -16,6 +16,13 @@ const usersDb = new Datastore({ filename: 'users.db', autoload: true });
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// Session middleware
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: true
+}));
+
 // Serve static files (e.g., HTML files) from the "public" directory
 app.use(express.static(path.join(__dirname, '')));
 
@@ -32,24 +39,32 @@ app.get('/home', (req, res) => {
 // Login endpoint (handles login form submission)
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
-
+    
     usersDb.findOne({ email, password }, (err, user) => {
-        if (err) {
-            return res.status(500).send('Internal Server Error');
-        }
-        if (!user) {
-            return res.status(401).send('Invalid email or password');
-        }
-        res.send('<h1>Login Successful!</h1><p>Welcome, ' + email + '!</p>');
+        if (err) return res.status(500).send('Internal Server Error');
+        if (!user) return res.status(401).send('Invalid email or password');
+        req.session.user = user;
+        res.redirect('/');
     });
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+});
+
+app.get('/currentUser', (req, res) => {
+    if (req.session.user) {
+        res.json(req.session.user);
+    } else {
+        res.status(401).send('Not logged in');
+    }
 });
 
 // Endpoint to list all users
 app.get('/users', (req, res) => {
     usersDb.find({}, (err, users) => {
-        if (err) {
-            return res.status(500).send('Internal Server Error');
-        }
+        if (err) return res.status(500).send('Internal Server Error');
         res.json(users);
     });
 });
@@ -57,9 +72,7 @@ app.get('/users', (req, res) => {
 // Endpoint to get recent activity
 app.get('/recentActivity', (req, res) => {
     recentActivityDb.find({}, (err, activities) => {
-        if (err) {
-            return res.status(500).send('Internal Server Error');
-        }
+        if (err) return res.status(500).send('Internal Server Error');
         res.json(activities);
     });
 });
@@ -67,61 +80,40 @@ app.get('/recentActivity', (req, res) => {
 // Endpoint to get members
 app.get('/members', (req, res) => {
     membersDb.find({}, (err, members) => {
-        if (err) {
-            return res.status(500).send('Internal Server Error');
-        }
+        if (err) return res.status(500).send('Internal Server Error');
         res.json(members);
     });
 });
 
 // Endpoint to get a single member
 app.get('/members/:id', (req, res) => {
-    const memberId = req.params.id;
-
-    membersDb.findOne({ _id: memberId }, (err, member) => {
-        if (err) {
-            return res.status(500).send('Internal Server Error');
-        }
-        if (!member) {
-            return res.status(404).send('Member not found');
-        }
+    membersDb.findOne({ _id: req.params.id }, (err, member) => {
+        if (err) return res.status(500).send('Internal Server Error');
+        if (!member) return res.status(404).send('Member not found');
         res.json(member);
     });
 });
 
 // Endpoint to add a new member
 app.post('/addMember', (req, res) => {
-    const newMember = req.body;
-
-    membersDb.insert(newMember, (err, newDoc) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: 'Internal Server Error' });
-        }
+    membersDb.insert(req.body, (err, newDoc) => {
+        if (err) return res.status(500).json({ success: false, message: 'Internal Server Error' });
         res.json({ success: true, message: 'Member added successfully', member: newDoc });
     });
 });
 
 // Endpoint to update a member
 app.put('/updateMember/:id', (req, res) => {
-    const memberId = req.params.id;
-    const updatedMember = req.body;
-
-    membersDb.update({ _id: memberId }, { $set: updatedMember }, {}, (err, numReplaced) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: 'Internal Server Error' });
-        }
+    membersDb.update({ _id: req.params.id }, { $set: req.body }, {}, (err, numReplaced) => {
+        if (err) return res.status(500).json({ success: false, message: 'Internal Server Error' });
         res.json({ success: true, message: 'Member updated successfully', numReplaced });
     });
 });
 
 // Endpoint to delete a member
 app.delete('/deleteMember/:id', (req, res) => {
-    const memberId = req.params.id;
-
-    membersDb.remove({ _id: memberId }, {}, (err, numRemoved) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: 'Internal Server Error' });
-        }
+    membersDb.remove({ _id: req.params.id }, {}, (err, numRemoved) => {
+        if (err) return res.status(500).json({ success: false, message: 'Internal Server Error' });
         res.json({ success: true, message: 'Member deleted successfully', numRemoved });
     });
 });
@@ -129,15 +121,11 @@ app.delete('/deleteMember/:id', (req, res) => {
 // Endpoint to compute total gold
 app.get('/totalGold', (req, res) => {
     recentActivityDb.find({ category: 'Gold' }, (err, activities) => {
-        if (err) {
-            return res.status(500).send('Internal Server Error');
-        }
+        if (err) return res.status(500).send('Internal Server Error');
         const totalGold = activities.reduce((sum, activity) => sum + activity.amount, 0);
         res.json({ totalGold });
     });
 });
 
 // Start the server
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
