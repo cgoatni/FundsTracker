@@ -2,10 +2,9 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const Datastore = require('nedb');
-const { format } = require('date-fns'); // Import date-fns
-
+const session = require('express-session'); // Add this line
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Initialize NeDB for recent activity, members, and users
 const recentActivityDb = new Datastore({ filename: 'recentActivity.db', autoload: true });
